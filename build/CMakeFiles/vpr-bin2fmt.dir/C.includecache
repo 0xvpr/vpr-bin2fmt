@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/vpr/github/04-tools/05-vpr-bin2fmt/src/main.c
+string.h
+-
+stdlib.h
+-
+stdint.h
+-
+stdio.h
+-
+errno.h
+-
+
