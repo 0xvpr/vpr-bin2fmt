@@ -1,3 +1,0 @@
-/home/vpr/github/04-tools/05-vpr-bin2fmt/build/CMakeFiles/rebuild_cache.dir
-/home/vpr/github/04-tools/05-vpr-bin2fmt/build/CMakeFiles/edit_cache.dir
-/home/vpr/github/04-tools/05-vpr-bin2fmt/build/CMakeFiles/vpr-bin2fmt.dir

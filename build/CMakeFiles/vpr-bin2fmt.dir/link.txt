@@ -1,1 +1,0 @@
-/usr/bin/gcc -std=c99 -O3 -DNDEBUG -s -Wall -Wextra -Werror -Wpedantic -Wshadow   CMakeFiles/vpr-bin2fmt.dir/src/main.c.o  -o ../bin/vpr-bin2fmt 
