@@ -22,8 +22,19 @@
 #define BUFSIZ 8192
 #endif /* BUFSIZ */
 
-#define RAW_SIZE_CONSTANT 4
-#define C_SIZE_CONSTANT 6
+#define RAW_SIZE_CONSTANT   0x04
+#define C_SIZE_CONSTANT     0x06
+
+#define CLEAN_NAME(clean_name, file_name)               \
+    memset(clean_name, 0, sizeof(clean_name));          \
+    memcpy(clean_name, file_name, strlen(file_name));   \
+    for (size_t i = 0; i < strlen(file_name); i++)      \
+    {                                                   \
+        if (!isalnum(clean_name[i]))                    \
+        {                                               \
+            clean_name[i] = '_';                        \
+        }                                               \
+    }
 
 char* convert_to_rawstring(char* buffer, size_t size)
 {
@@ -65,16 +76,7 @@ char* convert_to_c_style_string(char* buffer, size_t size)
 void print_raw_string(char* const file_name, char* raw_string)
 {
     char clean_name[256];
-
-    memset(clean_name, 0, sizeof(clean_name));
-    memcpy(clean_name, file_name, strlen(file_name));
-    for (size_t i = 0; i < strlen(file_name); i++)
-    {
-        if (!isalnum(clean_name[i]))
-        {
-            clean_name[i] = '_';
-        }
-    }
+    CLEAN_NAME(clean_name, file_name);
 
     fprintf(stdout,
             "char* const %s = \"%s\"\n" // clean_name, raw_string
@@ -86,19 +88,10 @@ void print_raw_string(char* const file_name, char* raw_string)
 void print_c_string(char* const file_name, char* c_style_string, size_t buffer_size)
 {
     char clean_name[256];
-
-    memset(clean_name, 0, sizeof(clean_name));
-    memcpy(clean_name, file_name, strlen(file_name));
-    for (size_t i = 0; i < strlen(file_name); i++)
-    {
-        if (!isalnum(clean_name[i]))
-        {
-            clean_name[i] = '_';
-        }
-    }
+    CLEAN_NAME(clean_name, file_name);
 
     fprintf(stdout,
-            "%s[%lu] = {" // clean_name, buffer_size
+            "unsigned char %s[%lu] = {" // clean_name, buffer_size
             "%s\n" // c_style_string
             "};\n"
             , clean_name
