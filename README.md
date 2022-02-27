@@ -12,7 +12,3 @@ sudo make install # if you want it available globally
 ```bash
 vpr-bin2fmt path/to/file.txt | xclip # save the output to your clipboard
 ```
-
-#### TODO
-- [ ] Add command line parser
-- [ ] Add conversion to C-style array
