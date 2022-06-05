@@ -1,46 +1,53 @@
-PROJECT    = vpr-bin2fmt
+TARGET    = vpr-bin2fmt
 
-CMAKE      = cmake
+CC        = gcc
+CFLAGS    = -O3 -Wall -Wextra -Werror -Wshadow -Wpedantic -Wconversion\
+            -ffunction-sections -ffast-math -funroll-loops -fPIE
 
-ifeq ($(TOOLCHAIN),)
-TOOLCHAIN  = -DCMAKE_TOOLCHAIN_FILE="gcc-toolchain-release.cmake"
-endif
+LD        = gcc
+LDFLAGS   = -s
 
-BIN        = bin
-SRC        = src
-BUILD      = build
-INCLUDE    = include
+BIN       = bin
+BUILD     = build
+
+SOURCE    = src
+OBJECT    = $(BUILD)
+SOURCES   = $(wildcard $(SOURCE)/*.c)
+OBJECTS   = $(patsubst $(SOURCE)/%.c,$(OBJECT)/%.o,$(SOURCES))
+
+INCLUDE   = include
+INCLUDES  = $(addprefix -I,$(INCLUDE))
 
 ifeq ($(PREFIX),)
-PREFIX     = /usr/local
+PREFIX    = /usr/local
 endif
 
-all: release
+all: $(TARGET)
+$(TARGET): $(BIN)/$(PROJECT)
 
-.PHONY: build_release
-build_release:
-	cmake -B $(BUILD) $(TOOLCHAIN)
+$(BIN)/$(PROJECT): $(BIN) $(BUILD) $(OBJECTS)
+	$(LD) $(LDFLAGS) $(OBJECTS) -o $(BIN)/$(TARGET)
 
-.PHONY: CMakeLists.txt
-release: build_release
-	cmake --build $(BUILD)
+$(OBJECTS): $(OBJECT)/%.o : $(SOURCE)/%.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-file:
-	echo -n "abcdefgABCDEFG" > $@.txt
+$(BIN):
+	mkdir -p $@
+
+$(BUILD):
+	mkdir -p $@
 
 .PHONY: install
-install:
-	install -d $(PREFIX)/bin 
-	install -m 555 $(BIN)/$(PROJECT) $(PREFIX)/bin
+install: $(BIN)/$(PROJECT)
+	install -d $(PREFIX)/bin
+	install -m 555 $(BIN)/$(TARGET) $(PREFIX)/bin
 
 .PHONY: clean
 clean:
-	rm -fr bin/*
-	rm -fr build/*
-	rm -fr file.txt
+	rm -fr ./$(BIN)/*
+	rm -fr ./$(BUILD)/*
 
 .PHONY: extra-clean
 extra-clean:
-	rm -fr bin
-	rm -fr build
-	rm -fr file.txt
+	rm -fr ./$(BIN)
+	rm -fr ./$(BUILD)

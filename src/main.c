@@ -1,109 +1,202 @@
 /**
  * Creator:    VPR
  * Created:    February 24th, 2022
- * Updated:    February 24th, 2022
+ * Updated:    June 5th, 2022
  *
  * Description:
  *     Takes in a given file and returns a specified format of either
  *     a c-style string array or a raw backslash escaped hex string.
 **/
 
-/*#include "parser.h"*/ // TODO: create command line parser
-#include <string.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <stdio.h>
-#include <errno.h>
 
-#ifndef BUFSIZ
-#define BUFSIZ 8192
-#endif /* BUFSIZ */
+static FILE* out_stream;
+static char* program;
+static char* target;
+static int format;
 
-#define SIZE_CONSTANT 4
-
-char* convert_to_rawstring(char* buffer, size_t size)
+static inline void __attribute((noreturn)) __usage_error(int error_code, char* restrict message)
 {
-    char* raw_string = (char *)calloc(sizeof(uint8_t), size * SIZE_CONSTANT * sizeof(uint8_t));
-    for (size_t i = 0, j = 0; i < size; i++, j += SIZE_CONSTANT)
-    {
-        snprintf(raw_string + j, SIZE_CONSTANT + 1, "\\x%02x", buffer[i]);
-    }
-    raw_string[size * SIZE_CONSTANT] = '\0';
+    fprintf(stderr,
+        "Error %d: %s.\n" // error_code, message
+        "\n"
+        "Usage:\n"
+        "  %s <path/to/executable> [ optional switches ]\n" // program
+        "\n"
+        "positional arguments:\n"
+        "  path/to/executable\n"
+        "\n"
+        "optional switches:\n"
+        "  -c,-C\t\toutput as c-style char array\n"
+        "  -s,-S\t\toutput as double quoted string\n"
+        "example :\n"
+        "  %s path/to/executable\n" // program
+        ,error_code, message, program, program
+    );
 
-    return raw_string;
+    exit(error_code);
 }
 
-void print_formatted_string(int format, char* string)
+static __attribute__((hot)) void handle_command_line(int argc, char** argv)
 {
-    switch (format)
+    if (argc < 2)
     {
-        case 0:
+        __usage_error(1, "Missing positional arguments");
+    }
+
+    for (int i = 2; i < argc; i++)
+    {
+        switch (argv[i][0])
         {
-            putc('\"', stdout);
-            fprintf(stdout, "%s", string);
-            putc('\"', stdout);
-            break;
+            case '-':
+            {
+                switch (argv[i][1])
+                {
+                    case 'C':
+                    case 'c':
+                    {
+                        format = 'c';
+                        break;
+                    }
+                    case 'S':
+                    case 's':
+                    {
+                        format = 's';
+                        break;
+                    }
+                    default:
+                    {
+                        __usage_error(2, "Unknown option supplied");
+                    }
+                }
+            }
         }
-        default:
-            break;
+    }
+
+    if (!format)
+    {
+        format = 'c';
+    }
+
+    if (!out_stream)
+    {
+        out_stream = stdout;
+    }
+}
+
+static __attribute__((hot)) void verify_target_exists(void)
+{
+    FILE* fp;
+    if (!(fp = fopen(target, "rb")))
+    {
+        char buffer[256] = { 0 };
+        snprintf(buffer, sizeof(buffer), "Failed to find executable '%s'", target);
+        __usage_error(3, buffer);
+    }
+    fclose(fp);
+}
+
+static __attribute((hot)) char* find_last(char c, char* file_name)
+{
+    char* return_addr = file_name;
+
+    int position = 0;
+    for (int i = 0; *(return_addr + i) != '\0'; ++i)
+    {
+        if (*(return_addr + i) == c)
+        {
+            position = i + 1;
+        }
+    }
+
+    return return_addr + position;
+}
+
+static __attribute__((hot)) void extract_file_name(void* restrict dst, void* restrict src, size_t size)
+{
+    src = find_last('/', src);
+
+    for (size_t i = 0; i < size; ++i)
+    {
+        char new_char = *((char *)src + i);
+        if ( (new_char >= 'A' && new_char <= 'Z') ||
+             (new_char >= 'a' && new_char <= 'z') ||
+             (new_char >= '0' && new_char <= '9')
+           )
+        {
+            *((char *)dst + i) = new_char | 0x20;
+        }
+        else if (new_char == '\0')
+        {
+            return;
+        }
+        else
+        {
+            *((char *)dst + i) = '_';
+        }
     }
 }
 
 int main(int argc, char** argv)
 {
-    char   file_name[256];
-    char   buffer[1024];
-    size_t buffer_size;
-    char*  raw_string;
-    int    format;
     FILE*  fp;
 
-    // Handle command-line
-    if (argc < 2)
+    program = argv[0];
+    handle_command_line(argc, argv);
+
+    for (int i = 1; i < argc; ++i)
     {
-        perror("FATAL"); // TODO: replace with custom message
-        return -1;
+        target = argv[i];
+        if (target[0] == '-')
+        {
+            continue;
+        }
+
+        if (!(fp = fopen(target, "rb")))
+        {
+            fprintf(stderr, "Failed to open %s.\n", target);
+            continue;
+        }
+
+        verify_target_exists();
+        switch (format)
+        {
+            case 'c':
+            {
+                long int file_size = 0;
+                fseek(fp, 0, SEEK_END);
+                file_size = ftell(fp);
+                fseek(fp, 0, SEEK_SET);
+                
+                char file_name_buffer[256] = { 0 };
+                extract_file_name(file_name_buffer, target, sizeof(file_name_buffer));
+
+                fprintf(out_stream, "unsigned char %s[%ld] = {", file_name_buffer, file_size);
+                for (int position = 0, c = 0; (c = fgetc(fp)) != EOF; ++position)
+                {
+                    fprintf(out_stream, "%s0x%02X%c", (position % 10 == 0 && position < file_size - 1 ? "\n    " : " "), c, (position < file_size - 1? ',' : '\0'));
+                }
+                fprintf(out_stream, "\n};\n");
+                fflush(out_stream);
+                break;
+            }
+            case 's':
+            {
+                fputc('"', out_stream);
+                for (int c = 0; (c = fgetc(fp)) != EOF;)
+                {
+                    fprintf(out_stream, "\\x%02X", c);
+                }
+                fputc('"', out_stream);
+                fflush(out_stream);
+                break;
+            }
+        }
+
+        // Cleanup
+        fclose(fp);
     }
-
-    // Get file_name
-    snprintf(file_name, sizeof(file_name), "%s", argv[1]);
-#ifndef NDEBUG
-    puts(file_name);
-#endif /* NDEBUG */
-
-    // Attempt to open file
-    if (!(fp = fopen(file_name, "rb")))
-    {
-        perror("FATAL"); // TODO: replace with custom message
-        return -1;
-    }
-
-    // Read contents of file into buffer
-    memset(buffer, 0, sizeof(buffer));
-    if (!(fread(buffer, sizeof(uint8_t), sizeof(buffer), fp)))
-    {
-        perror("FATAL"); // TODO: replace with custom message
-        return -1;
-    }
-#ifndef NDEBUG
-    puts(buffer);
-#endif /* NDEBUG */
-
-    // Get file-size
-    fseek(fp, 0, SEEK_END);
-    buffer_size = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-
-    // Format contents of buffer into rawstring
-    raw_string = convert_to_rawstring(buffer, buffer_size);
-
-    // Display
-    format = 0;
-    print_formatted_string(format, raw_string);
-
-    // Cleanup
-    /*free(raw_string);*/
-    fclose(fp);
 
     return 0;
 }
