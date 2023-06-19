@@ -13,11 +13,21 @@ This project aims to provide a tool for the conversion of a file to
 formatted double quoted string or a c-style array.
 
 ## Build instructions
+Linux/WSL/MSYS
 ```bash
 git clone https://github.com/0xvpr/vpr-bin2fmt vpr-bin2fmt
 cd vpr-bin2fmt
-make
-# sudo make install # uncomment if you want it available globally (only recommended for LINUX/WSL/MSYS environments)
+cmake -B build
+cmake --build build
+# sudo cmake --build build --target install # uncomment if you want it available globally
+```
+Windows
+```powershell
+git clone https://github.com/0xvpr/vpr-bin2fmt vpr-bin2fmt
+cd vpr-bin2fmt
+cmake.exe -B build
+cmake.exe --build build
+# cmake.exe --build build --target install # uncomment if you want it available globally
 ```
 
 ## Example Usage

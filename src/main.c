@@ -17,7 +17,10 @@ static char* program;
 static char* target;
 static int format;
 
-static __attribute__((noreturn)) 
+static
+#ifdef    __GNUC__
+__attribute__((noreturn)) 
+#endif /* __GNUC__ */
 void __usage_error(int error_code, char* restrict message)
 {
     fprintf(stderr,
@@ -40,7 +43,10 @@ void __usage_error(int error_code, char* restrict message)
     exit(error_code);
 }
 
-static __attribute((hot))
+static
+#ifdef    __GNUC__
+__attribute((hot))
+#endif /* __GNUC__ */
 const char* find_last(char c, const char* restrict file_name)
 {
     const char* return_addr = file_name;
@@ -57,7 +63,10 @@ const char* find_last(char c, const char* restrict file_name)
     return return_addr + position;
 }
 
-static __attribute__((hot))
+static
+#ifdef    __GNUC__
+__attribute__((hot))
+#endif /* __GNUC__ */
 void extract_file_name(char* restrict dst, const char* restrict src, size_t size)
 {
     src = find_last('/', src);
