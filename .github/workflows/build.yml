@@ -12,11 +12,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Make build directory and cd
-        run: mkdir build && cd build
+      - name: Create CMake cache
+        run: cmake -B build
 
-      - name: Build binaries with CMake for Ubuntu-22.04/Linux
-        run: cmake .. && cmake --build .
+      - name: Build and link objects
+        run: cmake --build build
 
   windows_build_cmake_msvc:
     runs-on: windows-latest
@@ -25,8 +25,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Make build directory and cd
-        run: mkdir build && cd build
+      - name: Create CMake cache
+        run: cmake -B build
 
-      - name: Build binaries with CMake for MSVC
-        run: cmake .. && cmake --build .
+      - name: Build and link objects
+        run: cmake --build build
