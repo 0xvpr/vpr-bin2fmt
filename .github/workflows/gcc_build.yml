@@ -1,0 +1,16 @@
+name: Build (GCC)
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  ubuntu_2204_build_gcc:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build with gcc
+        run: make
