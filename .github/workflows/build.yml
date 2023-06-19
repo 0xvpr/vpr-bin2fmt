@@ -1,0 +1,32 @@
+name: Builds (CMake)
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  ubuntu_latest_build_cmake_gcc:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Make build directory and cd
+        run: mkdir build && cd build
+
+      - name: Build binaries with CMake for Ubuntu-22.04/Linux
+        run: cmake .. && cmake --build .
+
+  windows_build_cmake_msvc:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Make build directory and cd
+        run: mkdir build && cd build
+
+      - name: Build binaries with CMake for MSVC
+        run: cmake .. && cmake --build .
