@@ -36,12 +36,24 @@ target_compile_options(
             $<$<C_COMPILER_ID:GNU>:-ffast-math>
             $<$<C_COMPILER_ID:GNU>:-funroll-loops>
             $<$<C_COMPILER_ID:GNU>:-fPIE>
+            $<$<C_COMPILER_ID:AppleClang>:-Ofast>
+            $<$<C_COMPILER_ID:AppleClang>:-Wall>
+            $<$<C_COMPILER_ID:AppleClang>:-Wextra>
+            $<$<C_COMPILER_ID:AppleClang>:-Werror>
+            $<$<C_COMPILER_ID:AppleClang>:-Wshadow>
+            $<$<C_COMPILER_ID:AppleClang>:-Wpedantic>
+            $<$<C_COMPILER_ID:AppleClang>:-Wconversion>
+            $<$<C_COMPILER_ID:AppleClang>:-ffunction-sections>
+            $<$<C_COMPILER_ID:AppleClang>:-ffast-math>
+            $<$<C_COMPILER_ID:AppleClang>:-funroll-loops>
+            $<$<C_COMPILER_ID:AppleClang>:-fPIE>
 )
 
 target_link_options(
     ${PROJECT_NAME}
     PRIVATE $<$<C_COMPILER_ID:MSVC>:/MANIFEST:NO>
             $<$<C_COMPILER_ID:GNU>:-s>
+            $<$<C_COMPILER_ID:AppleClang>:-s>
 )
 
 install(
