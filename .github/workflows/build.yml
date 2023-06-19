@@ -31,7 +31,7 @@ jobs:
       - name: Build and link objects
         run: cmake --build build --config Release
 
-  mac_latest_build_cmake_xcode:
+  mac_latest_build_cmake_apple_clang:
     runs-on: macOS-latest
 
     steps:
