@@ -1,6 +1,8 @@
 <h1 align="center">vpr-bin2fmt</h1>
 <p align="center">
-  <img src="https://img.shields.io/badge/Windows--x86-supported-44CC11"/>
+  <img src="https://img.shields.io/badge/Windows-supported-44CC11"/>
+  <img src="https://img.shields.io/badge/Mac-supported-44CC11"/>
+  <img src="https://img.shields.io/badge/Linux-supported-44CC11"/>
   <a href="https://mit-license.org/"/>
     <img src="https://img.shields.io/badge/License-MIT-44CC11"/>
   </a>
